@@ -5,14 +5,16 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using static _2048Solver.Game;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace _2048Solver
 {
 
 	internal class MonteCarlo
 	{
-	
+
 		public Game Game { get; set; }
 
 		public List<Run> Runs10 = new List<Run>()
@@ -22,7 +24,7 @@ namespace _2048Solver
 
 		//Runs10.AddRange(cities);
 		List<Run> Runs100 { get; set; }
-		
+
 		List<Run> Runs500;
 
 
@@ -30,10 +32,12 @@ namespace _2048Solver
 		public MonteCarlo(Game game)
 		{
 			Game = game;
-			
+
 			var collection = new List<Run>();
 
-			Runs100 = Enumerable.Range(0, 100).Select(x => { if (x <= 25) return new Run() { direction = Direction.Up, finalScore = x };
+			Runs100 = Enumerable.Range(0, 100).Select(x =>
+			{
+				if (x <= 25) return new Run() { direction = Direction.Up, finalScore = x };
 				if (x > 25 && x <= 50) return new Run() { direction = Direction.Down, finalScore = x };
 				if (x > 50 && x <= 75) return new Run() { direction = Direction.Right, finalScore = x };
 				if (x > 75 && x <= 100) return new Run() { direction = Direction.Left, finalScore = x };
@@ -49,71 +53,73 @@ namespace _2048Solver
 
 			internal int finalScore;
 		}
-		internal void MonteCarloInit(ulong[,] Board, ulong Score)
+		internal void Init()
 		{
-			ulong[,] FirstBoard = Board;
 
-			ulong FirstScore = Score;
+			List<Run> run = GetBestMove(Game.Board, Game.Score);
 
-			List<Run> run = GetBestMove(Board, Score);
-
-			Board = FirstBoard;
-
-			FirstScore = Score;
 
 		}
 
 		internal List<Run> GetBestMove(ulong[,] Board, ulong Score)
 		{
+			ulong[,] FirstBoard = (ulong[,])Board.Clone();
+
+			ulong FirstScore = Score;
+
+			FirstScore = Score;
 
 			do
 			{
 
-				foreach (string i in cars)
+				foreach (Run item in Runs100)
 				{
-					Console.WriteLine(i);
-				}
+					Game.PutNewValue();
 
+					Game.Update(Board, item.direction, out Score);
 
-
-				for (int i = 0; i < length; i++)
-				{
-					switch (input.Key)
+					while (!Game.IsDead())
 					{
-						case ConsoleKey.UpArrow:
-							hasUpdated = Update(Direction.Up);
+						if (Game.IsDead())
+						{
 							break;
+						}
 
-						case ConsoleKey.DownArrow:
-							hasUpdated = Update(Direction.Down);
-							break;
+						Game.Update(Board, GetRandomDirection(), out Score);
 
-						case ConsoleKey.LeftArrow:
-							hasUpdated = Update(Direction.Left);
+						if (Game.IsDead())
+						{
 							break;
+						}
+						Game.PutNewValue();
+						
 
-						case ConsoleKey.RightArrow:
-							hasUpdated = Update(Direction.Right);
+						if (Game.IsDead())
+						{
 							break;
-
-						default:
-							hasUpdated = false;
-							break;
+						}
 					}
-
-
+					Game.Display();
 
 				}
-
-
-
-
 
 			} while (Game.IsDead());
 
 			return null;
 		}
 
+		private Direction GetRandomDirection()
+		{
+			Random random = new Random();
+
+			Type type = typeof(Direction);
+
+			Array values = type.GetEnumValues();
+
+			int index = random.Next(values.Length);
+
+			return (Direction)values.GetValue(index);
+		}
 
 
 	}

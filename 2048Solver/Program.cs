@@ -8,17 +8,19 @@ namespace _2048Solver
 		static void Main(string[] args)
 		{
 			Game game = new Game();
-			
-			MonteCarlo monteCarlo= new MonteCarlo(game);
-			
+
+			MonteCarlo monteCarlo = new MonteCarlo(game);
+
+			monteCarlo.Init();
+
 			game.Run();
 		}
 	}
 
 	public class Game
 	{
-		public ulong Score { get;  set; }
-		public ulong[,] Board { get;  set; }
+		public ulong Score { get; set; }
+		public ulong[,] Board { get; set; }
 
 		private readonly int nRows;
 		private readonly int nCols;
@@ -42,7 +44,7 @@ namespace _2048Solver
 					PutNewValue();
 				}
 
-				Display();
+				//Display();
 
 				if (IsDead())
 				{
@@ -232,7 +234,7 @@ namespace _2048Solver
 			return true;
 		}
 
-		private void Display()
+		internal void Display()
 		{
 			Console.Clear();
 			Console.WriteLine();
@@ -269,10 +271,15 @@ namespace _2048Solver
 				}
 			}
 
+			if (emptySlots.Count == 0)
+			{
+				return;
+			}
 			// We should have at least 1 empty slot. Since we know the user is not dead
 			int iSlot = random.Next(0, emptySlots.Count); // randomly pick an empty slot
 			ulong value = random.Next(0, 100) < 95 ? (ulong)2 : (ulong)4; // randomly pick 2 (with 95% chance) or 4 (rest of the chance)
 			Board[emptySlots[iSlot].Item1, emptySlots[iSlot].Item2] = value;
+
 		}
 
 		#region Utility Classes
