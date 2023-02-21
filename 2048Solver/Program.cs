@@ -216,7 +216,7 @@ namespace _2048Solver
 			return isUpdated;
 		}
 
-		private bool IsDead()
+		internal bool IsDead()
 		{
 			ulong score;
 			foreach (Direction dir in new Direction[] { Direction.Down, Direction.Up, Direction.Left, Direction.Right })
@@ -254,7 +254,7 @@ namespace _2048Solver
 			Console.WriteLine();
 		}
 
-		private void PutNewValue()
+		internal void PutNewValue()
 		{
 			// Find all empty slots
 			List<Tuple<int, int>> emptySlots = new List<Tuple<int, int>>();
