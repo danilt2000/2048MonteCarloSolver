@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
@@ -47,7 +48,7 @@ namespace _2048Solver
 
 		}
 
-		public struct Run
+		public class Run
 		{
 			internal Direction direction;
 
@@ -63,45 +64,63 @@ namespace _2048Solver
 
 		internal List<Run> GetBestMove(ulong[,] Board, ulong Score)
 		{
-			ulong[,] FirstBoard = (ulong[,])Board.Clone();
-
-			ulong FirstScore = Score;
-
-			FirstScore = Score;
-
 			do
 			{
+				ulong[,] FirstBoard = (ulong[,])Board.Clone();
+
+				ulong FirstScore = Score;
+				
+				Stopwatch sw = new Stopwatch();
+
+				sw.Start();
 
 				foreach (Run item in Runs100)
 				{
+					Game.Score = 0;
+
 					Game.PutNewValue();
 
-					Game.Update(Board, item.direction, out Score);
+					Game.Update(Game.Board, item.direction, out Score);
 
 					while (!Game.IsDead())
 					{
-						if (Game.IsDead())
-						{
-							break;
-						}
+						bool hasUpdated = true;
 
-						Game.Update(Board, GetRandomDirection(), out Score);
 
 						if (Game.IsDead())
 						{
 							break;
 						}
-						Game.PutNewValue();
+						ulong score;
+
+						hasUpdated = Game.Update(Game.Board, GetRandomDirection(), out score);
+
+						Game.Score += score;
 						
+						if (Game.IsDead())
+						{
+							break;
+						}
+						if (hasUpdated)
+						{
+							Game.PutNewValue();
+						}
 
 						if (Game.IsDead())
 						{
 							break;
 						}
 					}
+
 					Game.Display();
 
+					item.finalScore = (int)Game.Score;
+
+					Game.Board = (ulong[,])FirstBoard.Clone();
+
 				}
+
+				sw.Stop();
 
 			} while (Game.IsDead());
 
