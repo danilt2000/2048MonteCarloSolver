@@ -1,6 +1,9 @@
-﻿using System;
+﻿using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
@@ -16,7 +19,7 @@ namespace _2048Solver
 	internal class MonteCarlo
 	{
 
-		public Game Game { get; set; }
+		public Game GameItem { get; set; }
 
 		private bool repetionFlag = false;
 
@@ -34,7 +37,7 @@ namespace _2048Solver
 
 		public MonteCarlo(Game game)
 		{
-			Game = game;
+			GameItem = game;
 
 			var collection = new List<Run>();
 
@@ -69,7 +72,7 @@ namespace _2048Solver
 		internal void Init()
 		{
 
-			List<Run> run = GetBestRace(Game.Board, Game.Score);
+			List<Run> run = GetBestRace(GameItem.Board, GameItem.Score);
 
 
 		}
@@ -78,86 +81,112 @@ namespace _2048Solver
 		{
 			Stopwatch sw = new Stopwatch();
 
+			List<Game> games = new List<Game>();
+
+			for (int i = 0; i < 10; i++)
+			{
+				sw.Start();
+
+				var game = GetSolvedGame();
+
+				sw.Stop();
+
+				game.GameTime = $"Minutes = {sw.Elapsed.TotalMinutes.ToString().Substring(0, sw.Elapsed.TotalMinutes.ToString().IndexOf(".") + 3)}" +
+					$" or seconds = {sw.Elapsed.TotalSeconds.ToString().Substring(0, sw.Elapsed.TotalSeconds.ToString().IndexOf(".") + 3)}";
+
+				games.Add(game);
+
+				sw.Reset();
+
+				DisposeGame();
+			}
+
+			ExcelConverter.СonvertGamesToExcel(games);
+
+			return null;
+		}
+
+
+
+		private void DisposeGame()
+		{
+			GameItem.Score = 0;
+
+			GameItem.Board = new ulong[4, 4];
+
+			GameItem.MaxNumber = 0;
+
+			GameItem.GameTime = string.Empty;
+
+		}
+
+		private Game GetSolvedGame()
+		{
 			bool hasUpdated = true;
 
 			int countOfRepetion = 0;
 
 			ulong score;
 
-			sw.Start();
-
-			Game.Score = 0;
-
 			do
 			{
-				//Game.Display();
-
 				if (hasUpdated)
 				{
-					Game.PutNewValue();
+					GameItem.PutNewValue();
 				}
 
-				//Game.Display();
+				ulong[,] BeforeBoard = (ulong[,])GameItem.Board.Clone();
 
-				ulong[,] BeforeBoard = (ulong[,])Game.Board.Clone();
-
-				ulong BeforeScore = Game.Score;
+				ulong BeforeScore = GameItem.Score;
 
 				foreach (Run Run in Runs200)
 				{
-					Game.Score = BeforeScore;
+					GameItem.Score = BeforeScore;
 
 					score = BeforeScore;
 
-					hasUpdated = Game.Update(Game.Board, Run.direction, out score);
+					hasUpdated = Game.Update(GameItem.Board, Run.direction, out score);
 
-					//Game.Display();
-
-					while (!Game.IsDead())
+					while (!GameItem.IsDead())
 					{
 						if (hasUpdated)
 						{
-							Game.PutNewValue();
+							GameItem.PutNewValue();
 						}
 
-						hasUpdated = Game.Update(Game.Board, GetRandomDirection(), out score);
+						hasUpdated = Game.Update(GameItem.Board, GetRandomDirection(), out score);
 
-						Game.Score += score;
+						GameItem.Score += score;
 
-						//Game.Display();
-
-						if (Game.IsDead())
+						if (GameItem.IsDead())
 						{
 							break;
 						}
 
 					}
 
-					//Game.Display();
+					Run.finalScore = (int)GameItem.Score;
 
-					Run.finalScore = (int)Game.Score;
+					GameItem.Board = (ulong[,])BeforeBoard.Clone();
 
-					Game.Board = (ulong[,])BeforeBoard.Clone();
 				}
 
-				Game.Score = BeforeScore;
+				GameItem.Score = BeforeScore;
 
 				score = BeforeScore;
 
-				if (Game.IsDead())
+				if (GameItem.IsDead())
 				{
 					break;
 				}
 
-				//Game.Display();
-
 				Direction bestDirecteion = GetBestDirection(Runs200);
 
-				hasUpdated = Game.Update(Game.Board, bestDirecteion, out score);
+				hasUpdated = Game.Update(GameItem.Board, bestDirecteion, out score);
 
-				Game.Score += score;
+				GameItem.Score += score;
 
-				if (Game.Score == BeforeScore)
+				if (GameItem.Score == BeforeScore)
 				{
 					countOfRepetion++;
 
@@ -171,17 +200,33 @@ namespace _2048Solver
 					countOfRepetion = 0;
 				}
 
-
-				//Game.Display();
-
-				//Game.Display();
-
 			} while (true);
 
-			sw.Stop();
+			GameItem.MaxNumber = GetMaxNumber();
 
-			return null;
+			return new Game() { Board = (ulong[,])GameItem.Board.Clone(), Score = GameItem.Score, MaxNumber = GameItem.MaxNumber };
 		}
+
+		private int GetMaxNumber()
+		{
+			int maxNumber = 0;
+
+			for (int Rows = 0; Rows < 4; Rows++)
+			{
+				for (int Cols = 0; Cols < 4; Cols++)
+				{
+
+					if (maxNumber < (int)GameItem.Board[Rows, Cols])
+					{
+						maxNumber = (int)GameItem.Board[Rows, Cols];
+					}
+
+				}
+			}
+
+			return maxNumber;
+		}
+
 		private Direction GetBestDirection(List<Run> Runs)
 		{
 			int UpScores = 0;

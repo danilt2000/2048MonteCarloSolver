@@ -20,9 +20,13 @@ namespace _2048Solver
 	public class Game
 	{
 		public ulong Score { get; set; }
+
 		public ulong[,] Board { get; set; }
 
-		private readonly int nRows;
+        public int MaxNumber { get; set; }
+        public string GameTime { get; set; }
+
+        private readonly int nRows;
 		private readonly int nCols;
 		private readonly Random random = new Random();
 

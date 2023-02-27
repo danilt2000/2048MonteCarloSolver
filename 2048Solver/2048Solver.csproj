@@ -6,4 +6,8 @@
     <RootNamespace>_2048Solver</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="6.1.3" />
+  </ItemGroup>
+
 </Project>
