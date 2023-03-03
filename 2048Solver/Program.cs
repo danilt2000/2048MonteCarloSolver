@@ -10,11 +10,11 @@ namespace _2048Solver
 
 
 
-			//Game game = new Game();
+			Game game = new Game();
 
-			//MonteCarlo monteCarlo = new MonteCarlo(game);
+			MonteCarlo monteCarlo = new MonteCarlo(game);
 
-			//monteCarlo.Init();
+			monteCarlo.Init();
 			//game.Run();
 
 			var gameDataList = ExcelConverter.GetGamesFromExcel(@"C:\test\SolvedGamesData.xlsx");
