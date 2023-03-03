@@ -1,19 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using Google.Cloud.Language.V1;
 namespace _2048Solver
 {
 	class Program
 	{
 		static void Main(string[] args)
 		{
-			Game game = new Game();
 
-			MonteCarlo monteCarlo = new MonteCarlo(game);
 
-			monteCarlo.Init();
 
-			game.Run();
+			//Game game = new Game();
+
+			//MonteCarlo monteCarlo = new MonteCarlo(game);
+
+			//monteCarlo.Init();
+			//game.Run();
+
+			var gameDataList = ExcelConverter.GetGamesFromExcel(@"C:\test\SolvedGamesData.xlsx");
+			
+			ConsoleWriter.WriteDataStatistics(gameDataList);
+
 		}
 	}
 
@@ -23,10 +30,10 @@ namespace _2048Solver
 
 		public ulong[,] Board { get; set; }
 
-        public int MaxNumber { get; set; }
-        public string GameTime { get; set; }
+		public int MaxNumber { get; set; }
+		public string GameTime { get; set; }
 
-        private readonly int nRows;
+		private readonly int nRows;
 		private readonly int nCols;
 		private readonly Random random = new Random();
 

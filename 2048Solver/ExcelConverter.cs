@@ -3,18 +3,52 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
+using static Google.Cloud.Language.V1.PartOfSpeech.Types;
 
 namespace _2048Solver
 {
 	internal class ExcelConverter
 	{
-
-		internal static void СonvertGamesToExcel(List<Game> games)
+		internal static List<Game> GetGamesFromExcel(string filePath)
 		{
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 			
+			var gameDataList = new List<Game>();
+			
+			var fileInfo = new FileInfo(filePath);
+			
+			using (var package = new ExcelPackage(fileInfo))
+			{
+				var worksheet = package.Workbook.Worksheets[0];
+
+				var rows = worksheet.Dimension.Rows;
+
+
+				for (var i = 2; i <= rows; i++)
+				{
+					var finalScore = Convert.ToInt32(worksheet.Cells[i, 1].Value);
+
+					var maxNumber = Convert.ToInt32(worksheet.Cells[i, 2].Value);
+
+					var gameTimeStr = worksheet.Cells[i, 3].Value.ToString();
+
+					var game = new Game { Score = (ulong)finalScore, MaxNumber = maxNumber, GameTime = gameTimeStr };
+
+					gameDataList.Add(game);
+				}
+
+			}
+
+			return gameDataList;
+		}
+
+		
+
+		internal static void СonvertGamesToExcel(List<Game> games, string filePath)
+		{
+			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
 			ExcelPackage excelPackage = new ExcelPackage();
 
 			// Создание листа в Excel файле
@@ -41,15 +75,13 @@ namespace _2048Solver
 				row++;
 			}
 
-			SaveExcelFile(excelPackage);
+			SaveExcelFile(excelPackage, filePath);
 		}
 
-		private static void SaveExcelFile(ExcelPackage excelPackage)
+		private static void SaveExcelFile(ExcelPackage excelPackage, string filePath)
 		{
-			string filePath = @"C:\test\SolvedGamesData3.xlsx";
-			
 			FileInfo excelFile = new FileInfo(filePath);
-			
+
 			excelPackage.SaveAs(excelFile);
 		}
 

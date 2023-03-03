@@ -28,7 +28,6 @@ namespace _2048Solver
 			 new Run(){ direction = Direction.Down, finalScore=432}
 					};
 
-		//Runs10.AddRange(cities);
 		List<Run> Runs100 { get; set; }
 
 		List<Run> Runs200 { get; set; }
@@ -72,18 +71,18 @@ namespace _2048Solver
 		internal void Init()
 		{
 
-			List<Run> run = GetBestRace(GameItem.Board, GameItem.Score);
+			GetBestRace(GameItem.Board, GameItem.Score);
 
 
 		}
 
-		internal List<Run> GetBestRace(ulong[,] Board, ulong Score)
+		internal void GetBestRace(ulong[,] Board, ulong Score)
 		{
 			Stopwatch sw = new Stopwatch();
 
 			List<Game> games = new List<Game>();
 
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < 30; i++)
 			{
 				sw.Start();
 
@@ -101,9 +100,8 @@ namespace _2048Solver
 				DisposeGame();
 			}
 
-			ExcelConverter.СonvertGamesToExcel(games);
-
-			return null;
+			ExcelConverter.СonvertGamesToExcel(games, @"C:\test\SolvedGamesData.xlsx");
+		
 		}
 
 
